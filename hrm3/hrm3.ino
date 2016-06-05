@@ -36,9 +36,11 @@ float convertRawGyro(int gRaw) {
 
 
 void setup() {
+  Serial.println("serial...");
   Serial.begin(9600);    // initialize serial communication
   pinMode(13, OUTPUT);   // initialize the LED on pin 13 to indicate when a central is connected
   // Set the accelerometer range to 2G
+  Serial.println("accel...");
     CurieIMU.setAccelerometerRange(2);
     CurieIMU.begin();
 
@@ -54,7 +56,7 @@ void setup() {
   /* Now activate the BLE device.  It will start continuously transmitting BLE
      advertising packets and will be visible to remote BLE central devices
      until it receives a new connection */
-  blePeripheral.begin();
+//  blePeripheral.begin();
   Serial.println("Bluetooth device active, waiting for connections...");
 }
 void updateHeartRate() {
