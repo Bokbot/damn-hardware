@@ -23,17 +23,18 @@
 */
 
 #include "CurieIMU.h"
+//#include <DateTime.h>
 
-#include <Time.h>
-#define TIME_MSG_LEN  11   // time sync to PC is HEADER followed by unix time_t as ten ascii digits
-#define TIME_HEADER  'T'   // Header tag for serial time sync message
-#define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
+/*#include <Time.h>*/
+/*#define TIME_MSG_LEN  11   // time sync to PC is HEADER followed by unix time_t as ten ascii digits*/
+/*#define TIME_HEADER  'T'   // Header tag for serial time sync message*/
+/*#define TIME_REQUEST  7    // ASCII bell character requests a time sync message */
 
 int oldHeartRate = 75;  // last heart rate reading from analog input
 int playerID = 110;  // last heart rate reading from analog input
 long previousMillis = 0;  // last time the heart rate was checked, in ms
 unsigned long timeSeed = 1465135837;
-unsigned long countZero = 0;
+unsigned long countZero = 1465135837;
 unsigned long now1;
 
 
@@ -49,15 +50,25 @@ void updateHeartRate() {
 //    const unsigned char heartRateCharArray[2] = { 0, (char)heartRate };
  //   heartRateChar.setValue(heartRateCharArray, 2);  // and update the heart rate measurement characteristic
     if(heartRate > 60 && heartRate < 180){
-      oldHeartRate = heartRate;           // save the level for next comparison
+      if(heartRate > oldHeartRate){
+
+        oldHeartRate = oldHeartRate + 1;           // save the level for next comparison
+      }
+      if(heartRate < oldHeartRate){
+        oldHeartRate = oldHeartRate - 1;           // save the level for next comparison
+
+      }
+      if(heartRate == oldHeartRate){
+        oldHeartRate = heartRate;           // save the level for next comparison
+      }
     }
   }
 }
 
 void setup() {
-  Serial.begin(9600); // initialize Serial communication
+  Serial.begin(115200); // initialize Serial communication
   while (!Serial);    // wait for the serial port to open
-  setTime(timeSeed);
+  //setTime(timeSeed);
 
   // initialize device
   Serial.println("Initializing IMU device...");
@@ -117,9 +128,11 @@ void loop() {
     Serial.print(",");
     Serial.print(oldHeartRate);
     Serial.print(",");
-    Serial.print(now());
+    //Serial.print(DateTime.now());
+    Serial.print(countZero);
     Serial.print(",");
     Serial.println(millis());
+    countZero++;
 
   // wait 5 seconds
   delay(500);
