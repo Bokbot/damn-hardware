@@ -1,4 +1,5 @@
 #include <CurieBLE.h>
+#include <CurieIMU.h>
 
 BLEPeripheral blePeripheral;       // BLE Peripheral Device (the board you're programming)
 BLEService heartRateService("180D"); // BLE Heart Rate Service
@@ -9,11 +10,15 @@ BLECharacteristic heartRateChar("2A37",  // standard 16-bit characteristic UUID
                               // https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.heart_rate_measurement.xml
 
 int oldHeartRate = 0;  // last heart rate reading from analog input
+int playerID = 110;  // last heart rate reading from analog input
 long previousMillis = 0;  // last time the heart rate was checked, in ms
 
 void setup() {
   Serial.begin(9600);    // initialize serial communication
   pinMode(13, OUTPUT);   // initialize the LED on pin 13 to indicate when a central is connected
+  // Set the accelerometer range to 2G
+    CurieIMU.setAccelerometerRange(2);
+    CurieIMU.begin();
 
   /* Set a local name for the BLE device
      This name will appear in advertising packets
@@ -37,7 +42,7 @@ void updateHeartRate() {
   int heartRateMeasurement = analogRead(A0);
   int heartRate = map(heartRateMeasurement, 0, 1023, 0, 100);
   if (heartRate != oldHeartRate) {      // if the heart rate has changed
-    Serial.print("Heart Rate is now: "); // print it
+ //   Serial.print("Heart Rate is now: "); // print it
     Serial.println(heartRate);
     const unsigned char heartRateCharArray[2] = { 0, (char)heartRate };
     heartRateChar.setValue(heartRateCharArray, 2);  // and update the heart rate measurement characteristic
@@ -46,6 +51,16 @@ void updateHeartRate() {
 }
 
 void loop() {
+  int axRaw, ayRaw, azRaw;         // raw accelerometer values
+  float ax, ay, az;
+
+  // read raw accelerometer measurements from device
+    CurieIMU.readAccelerometer(axRaw, ayRaw, azRaw);
+
+  // convert the raw accelerometer data to G's
+  ax = convertRawAcceleration(axRaw);
+  ay = convertRawAcceleration(ayRaw);
+  az = convertRawAcceleration(azRaw);
 
  // listen for BLE peripherals to connect:
   // BLECentral central = blePeripheral.central();
@@ -73,6 +88,17 @@ void loop() {
     //digitalWrite(13, LOW);
     //Serial.print("Disconnected from central: ");
     //Serial.println(central.address());
+    Serial.print(playerID);
+    Serial.print(',');
+    Serial.print(ax);
+    Serial.print(",");
+    Serial.print(ay);
+    Serial.print(",");
+    Serial.print(az);
+    Serial.print(',');
+    Serial.println(oldHeartRate);
+    Serial.println();
+    delay(250);
   }
 }
 
