@@ -24,9 +24,18 @@
 
 #include "CurieIMU.h"
 
+#include <Time.h>
+#define TIME_MSG_LEN  11   // time sync to PC is HEADER followed by unix time_t as ten ascii digits
+#define TIME_HEADER  'T'   // Header tag for serial time sync message
+#define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
+
 int oldHeartRate = 75;  // last heart rate reading from analog input
 int playerID = 110;  // last heart rate reading from analog input
 long previousMillis = 0;  // last time the heart rate was checked, in ms
+unsigned long timeSeed = 1465135837;
+unsigned long countZero = 0;
+unsigned long now1;
+
 
 void updateHeartRate() {
   /* Read the current voltage level on the A0 analog input pin.
@@ -48,6 +57,7 @@ void updateHeartRate() {
 void setup() {
   Serial.begin(9600); // initialize Serial communication
   while (!Serial);    // wait for the serial port to open
+  setTime(timeSeed);
 
   // initialize device
   Serial.println("Initializing IMU device...");
@@ -71,6 +81,7 @@ void loop() {
   gy = convertRawGyro(gyRaw);
   gz = convertRawGyro(gzRaw);
 
+  now1 = millis();
 
   // read raw accelerometer measurements from device
   CurieIMU.readAccelerometer(axRaw, ayRaw, azRaw);
@@ -104,7 +115,11 @@ void loop() {
     Serial.print(",");
     Serial.print(gz);
     Serial.print(",");
-    Serial.println(oldHeartRate);
+    Serial.print(oldHeartRate);
+    Serial.print(",");
+    Serial.print(now());
+    Serial.print(",");
+    Serial.println(millis());
 
   // wait 5 seconds
   delay(500);
