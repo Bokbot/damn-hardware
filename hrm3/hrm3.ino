@@ -53,6 +53,16 @@ void updateHeartRate() {
 void loop() {
   int axRaw, ayRaw, azRaw;         // raw accelerometer values
   float ax, ay, az;
+  int gxRaw, gyRaw, gzRaw;         // raw gyro values
+  float gx, gy, gz;
+
+  // read raw gyro measurements from device
+  CurieIMU.readGyro(gxRaw, gyRaw, gzRaw);
+
+  // convert the raw gyro data to degrees/second
+  gx = convertRawGyro(gxRaw);
+  gy = convertRawGyro(gyRaw);
+  gz = convertRawGyro(gzRaw);
 
   // read raw accelerometer measurements from device
     CurieIMU.readAccelerometer(axRaw, ayRaw, azRaw);
@@ -96,6 +106,12 @@ void loop() {
     Serial.print(",");
     Serial.print(az);
     Serial.print(',');
+    Serial.print(gx);
+    Serial.print(",");
+    Serial.print(gy);
+    Serial.print(",");
+    Serial.print(gz);
+    Serial.print(",");
     Serial.println(oldHeartRate);
     Serial.println();
     delay(250);
